@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeTyper // Muscle Memory for Developers</title>
+
+  <meta name="description"
+    content="A minimal, distraction-free typing speed test for programmers. Practice syntax and symbols by typing actual code blocks from open-source repositories.">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body data-theme="retro-dark">
+
+  <!-- Header -->
+  <header>
+    <div class="logo-section" id="logo-refresh">
+      <h1>code<span>typer</span></h1>
+    </div>
+
+    <div class="controls-section">
+      <!-- Language Selector -->
+      <select id="lang-select" class="control-item" title="Select programming language">
+        <option value="javascript">JavaScript</option>
+        <option value="python">Python</option>
+        <option value="go">Go Lang</option>
+        <option value="rust">Rust</option>
+        <option value="cpp">C++</option>
+      </select>
+
+      <!-- Custom Repo Button -->
+      <button id="custom-repo-btn" class="control-item" title="Pull from public repository">
+        <svg class="control-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+          viewBox="0 0 24 24" style="margin-right: 2px;">
+          <path
+            d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
+          </path>
+        </svg>
+        <span>GitHub Repo</span>
+      </button>
+
+      <!-- Theme Selector -->
+      <select id="theme-select" class="control-item" title="Select theme">
+        <option value="retro-dark">Retro Dark</option>
+        <option value="dracula">Dracula</option>
+        <option value="nord">Nordic Frost</option>
+        <option value="one-dark">One Dark</option>
+        <option value="cyberpunk">Cyberpunk</option>
+        <option value="retro-light">Retro Light</option>
+      </select>
+
+      <!-- Settings Panel toggle -->
+      <button id="settings-toggle" class="control-item" title="Configure options">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path
+            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z">
+          </path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Live HUD during test -->
+    <div class="stats-banner">
+      <div class="stat-group">
+        <span class="stat-label">wpm</span>
+        <span id="live-wpm" class="stat-val">0</span>
+      </div>
+      <div class="stat-group">
+        <span class="stat-label">acc</span>
+        <span id="live-accuracy" class="stat-val">100%</span>
+      </div>
+      <div class="stat-group">
+        <span class="stat-label">time</span>
+        <span id="live-timer" class="stat-val">0s</span>
+      </div>
+    </div>
+
+    <!-- Typing Area -->
+    <div id="typing-container" class="typing-container" tabindex="0">
+      <!-- Hidden keyboard listener -->
+      <textarea id="input-helper" autocomplete="off" autocapitalize="off" spellcheck="false" autofocus></textarea>
+
+      <!-- Unfocused blur state -->
+      <div id="focus-banner" class="focus-banner">
+        <span>Click here or press any key to focus and type</span>
+      </div>
+
+      <!-- Loading Github state overlay -->
+      <div id="status-overlay" class="status-overlay">
+        <div class="loader"></div>
+        <span id="status-text" class="status-text">Fetching repo contents...</span>
+      </div>
+
+      <!-- Monospace Code Snippet Display -->
+      <div id="code-display" class="code-display">
+        <!-- Lines and spans will be rendered here by app.js -->
+        <div id="caret" class="blink"></div>
+      </div>
+    </div>
+
+    <!-- Quick reset visual cues -->
+    <div class="reset-prompt" id="restart-btn">
+      <svg class="reset-icon" viewBox="0 0 24 24">
+        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+      </svg>
+      <span style="font-size: 0.85rem; font-weight: 500; letter-spacing: 0.5px;">Press <kbd>Tab</kbd> to reload
+        snippet</span>
+    </div>
+
+    <!-- Results Modal (hidden by default) -->
+    <div id="results-container" class="results-container">
+      <div class="results-metrics">
+        <div class="result-card">
+          <span class="label">wpm</span>
+          <span id="res-wpm" class="value">0</span>
+        </div>
+        <div class="result-card">
+          <span class="label">raw wpm</span>
+          <span id="res-raw" class="value">0</span>
+        </div>
+        <div class="result-card">
+          <span class="label">accuracy</span>
+          <span id="res-acc" class="value">100%</span>
+        </div>
+        <div class="result-card">
+          <span class="label">errors</span>
+          <span id="res-errors" class="value">0</span>
+        </div>
+        <div class="result-card">
+          <span class="label">time</span>
+          <span id="res-time" class="value">0s</span>
+        </div>
+      </div>
+
+      <!-- WPM speed line chart -->
+      <div class="chart-box" id="chart-box">
+        <!-- SVG generated chart will be output here -->
+      </div>
+
+      <div class="results-actions">
+        <button id="result-restart" class="action-btn">Practice Again</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Settings Drawer -->
+  <div id="settings-drawer" class="settings-drawer">
+    <div class="drawer-header">
+      <h2 class="drawer-title">Settings</h2>
+      <button id="close-drawer" class="close-drawer" aria-label="Close settings">&times;</button>
+    </div>
+
+    <!-- Audio settings -->
+    <div class="setting-group toggle-switch">
+      <div class="switch-label">
+        <span class="setting-label">Keystroke Sound Synth</span>
+        <span class="setting-desc">Tactile clicks synthesized on key down</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="sound-toggle" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <!-- Auto-indent settings -->
+    <div class="setting-group toggle-switch">
+      <div class="switch-label">
+        <span class="setting-label">Auto-Skip Indentation</span>
+        <span class="setting-desc">Automatically skip leading indentation spaces</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="indent-toggle" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <!-- GitHub Credentials -->
+    <div class="setting-group">
+      <label class="setting-label" for="github-token">GitHub Access Token</label>
+      <span class="setting-desc" style="margin-bottom: 0.2rem;">Optional. Bypasses GitHub API rate limits (60/hr). Saved
+        locally.</span>
+      <input type="password" id="github-token" class="setting-field" placeholder="ghp_xxxxxxxxxxxx">
+    </div>
+  </div>
+
+  <!-- Dialog for GitHub repo inputs -->
+  <div id="dialog-overlay" class="dialog-overlay"></div>
+  <div id="repo-dialog" class="custom-repo-dialog">
+    <h3 class="dialog-title">Practice Custom Repo</h3>
+    <input type="text" id="repo-input" class="dialog-input" placeholder="e.g. facebook/react" autocomplete="off"
+      spellcheck="false">
+    <div class="dialog-buttons">
+      <button id="repo-cancel" class="dialog-btn cancel">Cancel</button>
+      <button id="repo-confirm" class="dialog-btn confirm">Load Repo</button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-left">
+      <span style="display: inline-flex; align-items: center; gap: 4px;">
+        Build by <a href="#" class="footer-link">Antigravity</a>
+      </span>
+      <span>&bull;</span>
+      <span class="commands-hint"><kbd>Tab</kbd> quick reset</span>
+    </div>
+    <div>
+      <span>&bull;</span>
+      <span style="margin-left: 0.5rem;">Train your code typing muscle memory</span>
+    </div>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+
+</html>
