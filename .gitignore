@@ -1,0 +1,8 @@
+# IDE / System
+.DS_Store
+.vscode/
+.idea/
+
+# Local build / Server log
+*.log
+node_modules/
